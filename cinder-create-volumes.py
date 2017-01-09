@@ -113,6 +113,8 @@ parser.add_argument('--version', action='version', version=version)
 
 args = parser.parse_args()
 
+os_vars = ('1', os.environ['OS_USERNAME'], os.environ['OS_PASSWORD'], os.environ['OS_TENANT_NAME'], os.environ['OS_AUTH_URL'])
+
 # connect to keystone
 try:
     c = client.Client('1', args.os_username, args.os_password,
