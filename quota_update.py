@@ -11,4 +11,4 @@ for i in range(len(s.strip().split('|\n|'))):
         'cinder', 'quota-update', '--gigabytes', val, '--volumes',
         val, '--snapshots', val, pr_id])
     subprocess.call([
-        'nova', 'quota-update', '--instances', val, 'cores', val, pr_id])
+        'nova', 'quota-update', '--instances', val, '--cores', val, pr_id])
