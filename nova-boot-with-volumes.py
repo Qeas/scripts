@@ -1,8 +1,11 @@
 import argparse
-import os
-from novaclient import client as novacl
+# import os
+# from novaclient import client as novacl
 import subprocess
 
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
+from novaclient import client
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -10,9 +13,19 @@ parser.add_argument(
     help='Amount of nova instances to boot')
 args = parser.parse_args()
 
-nova = novacl.Client(
-    '2', os.environ['OS_USERNAME'], os.environ['OS_PASSWORD'],
-    os.environ['OS_TENANT_NAME'], os.environ['OS_AUTH_URL'])
+auth = v3.Password(auth_url='http://127.0.0.1:5000/v3',
+                   username='admin',
+                   password='nexenta',
+                   project_name='admin',
+                   user_domain_id='default',
+                   project_domain_id='default')
+sess = session.Session(auth=auth)
+nova = client.Client("2.1", session=sess)
+
+# nova = novacl.Client(
+#     '2', os.environ['OS_USERNAME'], os.environ['OS_PASSWORD'],
+#     os.environ['OS_TENANT_NAME'], os.environ['OS_TENANT_NAME'],
+#     os.environ['OS_AUTH_URL'], connection_pool=True)
 fl = nova.flavors.find(name='m1.nano')
 im = nova.images.find(name='cirros-0.3.4-x86_64-uec')
 for i in range(args.amount):

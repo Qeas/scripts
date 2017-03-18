@@ -10,6 +10,10 @@ import sys
 import logging
 import time
 import os
+import subprocess
+from cinderclient import client as cindercl
+
+
 logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s')
 l = logging.getLogger(__name__)
 l.setLevel(logging.INFO)
@@ -137,6 +141,13 @@ voltype_id = None
 #     l.error("Exception while looking up volume_type named {0}. Exception was: "
 #             "{1}".format(args.volume_type, exc))
 #     sys.exit(1)
+def delete_volumes():
+    cinder = cindercl.Client(
+        '2', os.environ['OS_USERNAME'], os.environ['OS_PASSWORD'],
+        os.environ['OS_TENANT_NAME'], os.environ['OS_AUTH_URL'])
+    volumes = cinder.volumes.list()
+    for v in volumes:
+        subprocess.call(['cinder', 'delete', v.id])
 
 for volume_index in range(args.start_index,
                           args.start_index + args.number_volumes):
@@ -181,6 +192,7 @@ while True:
         if current_vol.status == "available":
             l.info('Success')
             volume_is_error = False
+            delete_volumes()
         else:
             l.info('Fail')
         break
