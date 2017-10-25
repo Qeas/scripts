@@ -1,0 +1,51 @@
+docker-ce:
+
+apt-get install -y \
+  linux-image-extra-$(uname -r) linux-image-extra-virtual && \
+  apt-get install -y apt-transport-https ca-certificates curl software-properties-common && \
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && \
+  add-apt-repository \
+  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable" && apt-get update && apt-get install -y docker-ce
+
+
+kubeadm:
+
+apt-get update && apt-get install -y apt-transport-https && \
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update && apt-get install -y docker-engine && apt-get install -y kubelet kubeadm kubernetes-cni
+kubeadm init --apiserver-advertise-address=10.3.197.8 --pod-network-cidr=10.244.0.0/16 --service-cidr=10.96.0.0/12
+kubectl create -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+kubectl apply -f https://raw.githubusercontent.com/romana/romana/master/containerize/specs/romana-kubeadm.yml
+
+
+remove:
+kubectl drain nexenta --delete-local-data --force --ignore-daemonsets
+kubectl delete node nexenta
+kubeadm reset
+
+cmds:
+kubectl get pods --all-namespaces
+kubectl get nodes
+kubectl apply -f test-pd.yaml 
+kubectl create -f test-pd.yaml 
+kubectl delete -f test-pd.yaml
+
+golang:
+wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.8.3.linux-amd64.tar.gz 
+cat <<EOF >$HOME/.bashrc
+export PATH=$PATH:/usr/local/go/bin:/$HOME/go/bin
+export GOPATH=$HOME/go
+EOF
+source $HOME/.bashrc
+
+k8s plugin:
+go get -v github.com/kubernetes-incubator/external-storage/...

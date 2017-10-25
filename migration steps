@@ -1,0 +1,39 @@
+Migration:
+0. create folder on NS
+1. disable nms
+2. shutdown all instances
+3. use script on NS:
+python rename_zvols.py
+4. enable nms
+5. clone new cinder driver:
+git clone -b stable/mitaka https://github.com/cinder/Nexenta/cinder.git
+6. copy nexenta folder to cinder/volume/drivers folder:
+cp -rf cinder/cinder/volume/drivers/nexenta /usr/lib/python2.7/dist-packages/cinder/volume/drivers/
+7. add following line to cinder.conf:
+nexenta_folder = cindervolumes
+nexenta_iscsi_target_portal_groups = cinder1,cinder2
+8. restart cinder-volume
+9. install multipath-tools
+10. enable multipath in nova.conf:
+iscsi_use_multipath = True
+11. start instances
+
+Multipath:
+1. create target portals group(s) on NS
+2. add following line to cinder.conf:
+nexenta_iscsi_target_portal_groups = cinder1,cinder2
+3. install multipath-tools
+4. enable multipath in nova.conf:
+iscsi_use_multipath = True
+5. start instances
+
+Either remove all targets from NS or add TPGs to them.
+
+
+vol1
+14.3
+15.3
+
+vol2
+14.4
+15.4
