@@ -113,7 +113,7 @@ parser.add_argument('--availability-zone', help="Availability zone for volume."
 
 parser.add_argument('--version', action='version', version=version)
 parser.add_argument('number-volumes', help="The number of cinder volumes to "
-                    "create", required=True, metavar='number', type=int)
+                    "create", metavar='number', type=int)
 
 args = parser.parse_args()
 
