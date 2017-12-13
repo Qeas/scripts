@@ -1,0 +1,6 @@
+svccfg -s stmf:default
+select svc:/system/stmf:default
+listsnap
+revert start
+
+exit

@@ -1,0 +1,15 @@
+for i in {0..500}; do echo $i; `zfs create -V 1G QA/zvol-$i`; done
+for i in {0..500}; do echo $i; `stmfadm create-lu /dev/zvol/rdsk/QA/zvol-$i`; done
+for i in {0..25}; do echo $i; `itadm create-target -n iqn.1986-03.com.sun:02:cinder-172.16.0.74-$i -t tpg1,tpg2`; done
+for i in {0..25}; do echo $i; `stmfadm offline-target iqn.1986-03.com.sun:02:cinder-172.16.0.74-$i`; done
+for i in {0..25}; do echo $i; `stmfadm create-tg cinder/172.16.0.74-$i`; done
+for i in {0..25}; do echo $i; `stmfadm add-tg-member -g cinder/172.16.0.74-$i iqn.1986-03.com.sun:02:cinder-172.16.0.74-$i`; done
+for i in {0..25}; do echo $i; `stmfadm online-target iqn.1986-03.com.sun:02:cinder-172.16.0.74-$i`; done
+
+for i in {0..25}; do for j in {0..19}; do echo $i; `stmfadm add-view -t cinder/172.16.0.74-$j`; done; done
+
+stmfadm list-lu | tail -20 | awk '{print $3}' | xargs -L1 stmfadm list-view -l
+stmfadm list-lu | tail -500 | head -20 | awk '{print $3}' | xargs -L1 stmfadm add-view -t cinder/172.16.0.74-24
+stmfadm list-lu | tail -80 | head -20 | awk '{print $3}' | xargs -L1 stmfadm list-view -l
+
+for i in {0..25}; do echo $i; `itadm delete-target iqn.1986-03.com.sun:02:cinder-172.16.0.74-$i`; done

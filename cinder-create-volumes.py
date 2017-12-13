@@ -81,7 +81,7 @@ parser.add_argument('--name', help="The volume name template to use, "
                     required=False, metavar='template', default="volume")
 
 parser.add_argument('--size', help="The size in GB of each volume to create",
-                    required=True, metavar='GB_size', type=int)
+                    required=True, metavar='GB_size', type=int, default=1)
 
 parser.add_argument('--volume-type', help="The cinder volume-type name to use "
                     "for volume creation",
@@ -91,8 +91,6 @@ parser.add_argument('--poll-frequency', help="The frequency in seconds at "
                     "which to poll cinder for completion. Defaults to 60.",
                     required=False, metavar='seconds', type=int, default=60)
 
-parser.add_argument('--number-volumes', help="The number of cinder volumes to "
-                    "create", required=True, metavar='number', type=int)
 
 parser.add_argument('--start-index', help="The index to start with for volume"
                     " creation, this index is incremented at each volume "
@@ -114,6 +112,8 @@ parser.add_argument('--availability-zone', help="Availability zone for volume."
                     required=False, metavar='zone', default=None)
 
 parser.add_argument('--version', action='version', version=version)
+parser.add_argument('number-volumes', help="The number of cinder volumes to "
+                    "create", required=True, metavar='number', type=int)
 
 args = parser.parse_args()
 
