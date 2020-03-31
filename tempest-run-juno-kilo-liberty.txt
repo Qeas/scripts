@@ -1,0 +1,1 @@
+tox -e all -- --concurrency=1 '^(?=.*volume)(?!.*test_unmanage_manage_snapshot)(?!.*CinderUnicodeTest)(?!.*test_device_tagging)(?!.*test_rebuild_server_with_volume_attached)(?!.*test_resize_volume_backed_server_confirm)(?!.*_volume_shelved_or_offload_server)(?!.*test_minimum_basic_scenario)(?!.*test_shelve_volume_backed_instance)(?!.*test_multi_backend).*' | tee console.log.out

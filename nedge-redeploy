@@ -1,0 +1,7 @@
+mount | grep -c overlayroot | grep 2 && service nedge stop && source /opt/nedge/env.sh && echo 'y' | nezap && fdisk -l | grep -i gpt | wc -l | grep 0 && cd /media/root-rw/ && ls && rm -rf * && init 6
+
+cd /nedge-qa-bash/
+./1_nedeploy_download_builds.sh 6644
+echo "PATH=$PATH:/nedeploy:/neadm" >> /root/.bashrc
+./deploy_docker12
+./3_neadm_create_env1.sh

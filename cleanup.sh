@@ -10,3 +10,8 @@ for list in `neadm iscsi list iscsi | grep "volume-" | awk '{print $7}'` ; do ne
 
 
 for i in $(filesystem list -r -O basic -o path | grep QA/nfs_share/);do filesystem destroy -fyr $i;done
+
+
+ns5:
+for i in $(fs list -O basic -o path | grep volume-); do fs destroy -fyRr $i; done
+for i in $(vol list -O basic -o path | grep volume-); do vol destroy -yRr $i; done

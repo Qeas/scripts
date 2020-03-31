@@ -1,13 +1,88 @@
-docker-ce:
+# golang
+wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.13.1.linux-amd64.tar.gz
+mkdir -p /$HOME/go/bin
+cat <<EOF >$HOME/.bashrc
+export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+export GOPATH=$HOME/go
+EOF
+source $HOME/.bashrc
+ 
+# docker-ce
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-apt-get install -y \
-  linux-image-extra-$(uname -r) linux-image-extra-virtual && \
-  apt-get install -y apt-transport-https ca-certificates curl software-properties-common && \
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && \
-  add-apt-repository \
-  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable" && apt-get update && apt-get install -y docker-ce
+# install kubectl
+sudo apt-get update && sudo apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+# install minikube
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+  && chmod +x minikube
+sudo install minikube /usr/local/bin
+sudo minikube start --vm-driver=none --feature-gates=VolumeSnapshotDataSource=true,VolumePVCDataSource=true,ExpandInUsePersistentVolumes=true,ExpandCSIVolumes=true,ExpandPersistentVolumes=true,Topology=true,CSINodeInfo=true
+#sudo minikube delete
+
+# nexenta-csi-driver for dev
+go get -v github.com/Nexenta/nexentastor-csi-driver/...
+cd go/src/github.com/Nexenta/nexentastor-csi-driver/
+# edit config
+# build docker container
+# make changes to Makefile: 	
+IMAGE_NAME ?= nexenta/${DRIVER_NAME}:master
+# make changes to deploy/kubernetes/nexentastor-csi-driver.yaml:
+	imagePullPolicy: Always --> imagePullPolicy: IfNotPresent
+sudo docker image ls | grep nexentastor-csi-driver | awk '{print $3}' | xargs sudo docker image rm
+make build
+sudo make container-build
+# make changes to config
+sudo kubectl create secret generic nexentastor-csi-driver-config --from-file=deploy/kubernetes/nexentastor-csi-driver-config.yaml
+sudo kubectl apply -f deploy/kubernetes/nexentastor-csi-driver.yaml
+sudo kubectl apply -f examples/kubernetes/nginx-dynamic-volume.yaml
+sudo kubectl apply -f examples/kubernetes/nginx-clone-volume.yaml
+
+# update volumeHandle to point to existing fs on NS
+sudo kubectl apply -f examples/kubernetes/nginx-persistent-volume.yaml
+sudo kubectl delete -f deploy/kubernetes/nexentastor-csi-driver.yaml
+
+# logs
+sudo kubectl logs --all-containers=true nexentastor-csi-controller-0 -f
+
+# attach to shell
+sudo kubectl exec -it nginx-dynamic-volume -- /bin/bash
+
+# tests
+TEST_K8S_IP=10.3.196.93 make test-all-remote-image
+
+# nexenta-csi-driver for demo
+git clone https://github.com/Nexenta/nexentastor-csi-driver.git
+cd nexentastor-csi-driver
+
+# make changes to config file: deploy/kubernetes/nexentastor-csi-driver-config.yaml
+cat <<EOF >deploy/kubernetes/nexentastor-csi-driver-config.yaml
+restIp: https://10.3.199.252:8443,https://10.3.199.253:8443 # [required] NexentaStor REST API endpoint(s)
+username: admin                                             # [required] NexentaStor REST API username
+password: Nexenta@1                                         # [required] NexentaStor REST API password
+defaultDataset: csiDriverPool/csiDriverDataset              # default dataset for driver's fs/volume [pool/dataset]
+defaultDataIp: 20.20.20.252                                 # default NexentaStor data IP or HA VIP
+# for NFS mounts
+defaultMountFsType: nfs                                     # default mount fs type [nfs|cifs]
+EOF
 
 
 kubeadm:
@@ -22,8 +97,8 @@ kubeadm init --apiserver-advertise-address=10.3.197.8 --pod-network-cidr=10.244.
 kubectl create -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 kubectl taint nodes --all node-role.kubernetes.io/master-
-
 kubectl apply -f https://raw.githubusercontent.com/romana/romana/master/containerize/specs/romana-kubeadm.yml
+
 
 
 remove:
@@ -38,14 +113,9 @@ kubectl apply -f test-pd.yaml
 kubectl create -f test-pd.yaml 
 kubectl delete -f test-pd.yaml
 
-golang:
-wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.8.3.linux-amd64.tar.gz 
-cat <<EOF >$HOME/.bashrc
-export PATH=$PATH:/usr/local/go/bin:/$HOME/go/bin
-export GOPATH=$HOME/go
-EOF
-source $HOME/.bashrc
-
 k8s plugin:
 go get -v github.com/kubernetes-incubator/external-storage/...
+
+
+LOGS:
+kubectl -n kube-system logs --since 2h -l role=linstor-csi --all-containers

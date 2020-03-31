@@ -2,3 +2,8 @@ rm -rf $GOPATH/src/k8s.io/client-go $GOPATH/src/k8s.io/apimachinery $GOPATH/src/
 go get -v github.com/kubernetes/client-go $GOPATH/src/k8s.io/client-go/... && cd $GOPATH/src/k8s.io/client-go/ && git checkout 7615377
 go get -v github.com/kubernetes/apimachinery $GOPATH/src/k8s.io/apimachinery/... && cd $GOPATH/src/k8s.io/apimachinery && git checkout c1c4a7f
 go get -v github.com/kubernetes-incubator/external-storage $GOPATH/src/kubernetes-incubator/external-storage/... && cd $GOPATH/src/kubernetes-incubator/external-storage && git checkout v2.0.0
+
+rm -rf $GOPATH/src/k8s.io/client-go $GOPATH/src/k8s.io/apimachinery $GOPATH/src/kubernetes-incubator/external-storage
+go get -v github.com/kubernetes/client-go $GOPATH/src/k8s.io/client-go/... && cd $GOPATH/src/k8s.io/client-go/
+go get -v github.com/kubernetes/apimachinery $GOPATH/src/k8s.io/apimachinery/... && cd $GOPATH/src/k8s.io/apimachinery
+go get -v github.com/kubernetes-incubator/external-storage $GOPATH/src/kubernetes-incubator/external-storage/...

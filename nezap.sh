@@ -21,3 +21,15 @@ tmpl-newton-cinder-67
 /etc/apt/apt.conf.d/10periodic
 
 cinder --os-auth-url=http://127.0.0.1:5000/v2.0/ --os-username=admin --os-password=nexenta --os-tenant-name=admin --os-project-name=admin type-create test
+
+modprobe macvlan
+docker network create -d macvlan --subnet 192.168.1.0/24 --gateway 192.168.1.1 -o parent=ens4f1 client-net
+exit
+neadm service configure nfs01 X-Container-Network-36BAFD395A0D5475F492F619BC72150F "client-net --ip 192.168.1.242"
+neadm service enable nfs01
+вот так
+это вот на ноде делается
+ssh  10.3.32.252
+modprobe macvlan
+docker network create -d macvlan --subnet 192.168.1.0/24 --gateway
+192.168.1.1 -o parent=ens4f1 client-net

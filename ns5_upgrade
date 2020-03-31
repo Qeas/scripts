@@ -1,0 +1,12 @@
+publisher list
+ PUBLISHER         STATUS  LOCATION
+ nexenta           online  http://nefpkg.nexenta.com/
+ HighAvailability  online  http://unstableips.high-availability.com/
+publisher destroy nexenta
+publisher destroy HighAvailability
+publisher create nexenta  https://stgpkg.nexenta.com/nstor/pkg5/
+publisher create HighAvailability https://stgpkg.nexenta.com/thirdparty/HAC/rsf/pkg5/
+software updates
+ VERSION    PACKAGINGDATE
+ 5.1.1-FP2  May  3 08:02:57
+CLI@ns502-28>

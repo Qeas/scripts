@@ -112,8 +112,8 @@ parser.add_argument('--availability-zone', help="Availability zone for volume."
                     required=False, metavar='zone', default=None)
 
 parser.add_argument('--version', action='version', version=version)
-parser.add_argument('number-volumes', help="The number of cinder volumes to "
-                    "create", metavar='number', type=int)
+parser.add_argument('--amount', help="The number of cinder volumes to "
+                    "create", metavar='number', type=int, default=1)
 
 args = parser.parse_args()
 
@@ -141,6 +141,8 @@ voltype_id = None
 #     l.error("Exception while looking up volume_type named {0}. Exception was: "
 #             "{1}".format(args.volume_type, exc))
 #     sys.exit(1)
+
+
 def delete_volumes():
     cinder = cindercl.Client(
         '2', os.environ['OS_USERNAME'], os.environ['OS_PASSWORD'],
@@ -149,9 +151,12 @@ def delete_volumes():
     for v in volumes:
         subprocess.call(['cinder', 'delete', v.id])
 
+
+print args.amount
 for volume_index in range(args.start_index,
-                          args.start_index + args.number_volumes):
+                          args.start_index + args.amount):
     # create the volume
+    print volume_index
     volume_name = "{0}-{1}".format(args.name, volume_index)
     additional_params = {}
     if args.image_id is not None:
