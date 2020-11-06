@@ -1,0 +1,4 @@
+In this program I am downloading the file from debian mirror, unzip it and count files associated with each module using a dictionary by incrementing the counter each time a module is mentioned.
+After evaluating the file, remove it.
+
+Took me approximately 1.5-2 hours.

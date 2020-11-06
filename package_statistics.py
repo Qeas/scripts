@@ -7,44 +7,56 @@ import exceptions
 import gzip
 import os
 import sys
-
-from six.moves import urllib
+import urllib
 
 
 def main(argv):
-    if not argv[1:]:
+    """
+    argv: parameters passed via command line
+    """
+
+    # check for incorrect input
+    architectures = ['amd64', 'arm64', 'armel', 'armhf', 'i386', 'mips',
+        'mips64el', 'mipsel', 'ppc64el', 's390x']
+    if len(argv) < 2:
         msg = ('Debian architecture must be passed as an argument, '
-               'for example: %s amd64') % sys.argv[0]
+               'for example: %s amd64') % argv[0]
+        raise exceptions.BaseException(msg)
+    if argv[1] not in architectures:
+        msg = ('Architecture must be one of %s') % architectures
         raise exceptions.BaseException(msg)
 
+    # download contents file
     base_url = 'http://ftp.uk.debian.org/debian/dists/stable/main/'
     file_name = 'Contents-%s.gz' % argv[1]
     file_path = os.path.join(os.getcwd(), file_name)
     url = '%s%s' % (base_url, file_name)
     print 'Downloading %s' % file_name
-    urllib.request.urlretrieve(url, file_path)
+    urllib.urlretrieve(url, file_path)
 
+    # unzip content
     print 'Unzipping %s' % file_name
-    with gzip.open(file_path, 'rb') as f:
-        file_content = f.read()
-        print len(file_content)
-    print os.getcwd()
+    with gzip.open(file_path, 'rb') as data:
+        file_content = data.read()
 
+    # count files associated with each module in a hash table
     modules_dict = {}
-    with open('test', 'r') as infile:
-        for line in infile:
-            deb_file, deb_module = line.split()
+    for line in file_content.split('\n'):
+        splitted_line = line.split()
+        # some files are not associated with any module, skip those
+        if len(splitted_line) > 1:
+            deb_module = splitted_line[-1]
             if modules_dict.get(deb_module):
-                if deb_file not in modules_dict[deb_module]:
-                    modules_dict[deb_module].append(deb_file)
+                modules_dict[deb_module] += 1
             else:
-                modules_dict[deb_module] = [deb_file]
+                modules_dict[deb_module] = 1
 
+    # sort by amount of files
     sorted_dict = sorted(
-        modules_dict.items(), key=lambda x: len(x[1]), reverse=True)
+        modules_dict.items(), key=lambda x: x[1], reverse=True)
     for i in sorted_dict[:10]:
-        print '%-35s%i' % (i[0], len(i[1]))
-
+        print '%-35s%i' % (i[0], i[1])
+    os.remove(file_path)
 
 if __name__ == '__main__':
     main(sys.argv)

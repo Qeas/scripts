@@ -1,3 +1,6 @@
+env GIT_TERMINAL_PROMPT=1 go get -v bitbucket.eng-us.tegile.com/eco/exascaler-csi-file-driver/...
+git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.org/"
+
 # golang
 wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go1.13.1.linux-amd64.tar.gz
@@ -5,9 +8,11 @@ mkdir -p /$HOME/go/bin
 cat <<EOF >$HOME/.bashrc
 export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
 export GOPATH=$HOME/go
+# go version cache disable
+export GOSUMDB=off
 EOF
 source $HOME/.bashrc
- 
+
 # docker-ce
 sudo apt-get remove docker docker-engine docker.io containerd runc
 sudo apt-get install -y \
@@ -30,17 +35,19 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubectl
+echo 'source <(kubectl completion bash)' >>~/.bashrc && source .bashrc
 
 # install minikube
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
   && chmod +x minikube
 sudo install minikube /usr/local/bin
-sudo minikube start --vm-driver=none --feature-gates=VolumeSnapshotDataSource=true,VolumePVCDataSource=true,ExpandInUsePersistentVolumes=true,ExpandCSIVolumes=true,ExpandPersistentVolumes=true,Topology=true,CSINodeInfo=true
+sudo minikube start --vm-driver=none  --extra-config=kubelet.cgroup-driver=systemd --feature-gates=VolumeSnapshotDataSource=true,VolumePVCDataSource=true,ExpandInUsePersistentVolumes=true,ExpandCSIVolumes=true,ExpandPersistentVolumes=true,ServiceTopology=true,CSINodeInfo=true,BlockVolume=true,CSIBlockVolume=true
+#,EndpointSlice=true
 #sudo minikube delete
 
 # nexenta-csi-driver for dev
-go get -v github.com/Nexenta/nexentastor-csi-driver/...
-cd go/src/github.com/Nexenta/nexentastor-csi-driver/
+go get -v github.com/Nexenta/nexentastor-csi-driver-block/...
+cd go/src/github.com/Nexenta/nexentastor-csi-driver-block/
 # edit config
 # build docker container
 # make changes to Makefile: 	
@@ -62,6 +69,8 @@ sudo kubectl delete -f deploy/kubernetes/nexentastor-csi-driver.yaml
 
 # logs
 sudo kubectl logs --all-containers=true nexentastor-csi-controller-0 -f
+sudo kubectl logs --all-containers=true nexentastor-csi-block-controller-0 -f > controller.log
+sudo kubectl logs --all-containers=true nexentastor-csi-block-node-0 -f > node.log
 
 # attach to shell
 sudo kubectl exec -it nginx-dynamic-volume -- /bin/bash
@@ -119,3 +128,13 @@ go get -v github.com/kubernetes-incubator/external-storage/...
 
 LOGS:
 kubectl -n kube-system logs --since 2h -l role=linstor-csi --all-containers
+
+exec:
+kubectl exec --stdin --tty  task-pv-pod -- /bin/bash
+
+docker run:
+docker run --network host --privileged --interactive --tty --entrypoint /bin/bash --mount type=bind,source=/,target=/host ubuntu
+
+cp /host/tmp/chroot-host-wrapper.sh .
+ln -s chroot-host-wrapper.sh mount
+./mount -t lustre 10.3.196.24@tcp:/csi /tmp/dir1

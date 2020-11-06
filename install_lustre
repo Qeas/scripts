@@ -1,0 +1,65 @@
+server:
+
+cat >/etc/yum.repos.d/lustre.repo <<\__EOF
+[lustre-server]
+name=lustre-server
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server
+# exclude=*debuginfo*
+gpgcheck=0
+
+[lustre-client]
+name=lustre-client
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client
+# exclude=*debuginfo*
+gpgcheck=0
+
+[e2fsprogs-wc]
+name=e2fsprogs-wc
+baseurl=https://downloads.whamcloud.com/public/e2fsprogs/latest/el7
+# exclude=*debuginfo*
+gpgcheck=0
+__EOF
+
+yum upgrade -y e2fsprogs
+yum install -y lustre-tests
+sh -c 'cat > /etc/modprobe.d/lnet.conf' <<EOF
+options lnet networks=tcp0(ens192)
+EOF
+sh -c 'cat > /etc/sysconfig/modules/lnet.module' <<EOF
+#!/bin/sh
+
+if [ ! -c /dev/lnet ] ; then
+    exec /sbin/modprobe lnet >/dev/null 2>&1
+fi
+EOF
+sudo chmod 744 /etc/sysconfig/modules/lnet.module
+
+mkfs.lustre --fsname=lustre --reformat --mgs --mdt --index=0 /dev/sdc
+mkdir -p /mnt/mdt
+mount -t lustre /dev/sdc /mnt/mdt
+
+mkfs.lustre --reformat --ost --fsname=lustre --mgsnode=172.16.0.134@tcp0 --index=0 /dev/sdb
+mkdir -p /mnt/ost
+mount -t lustre /dev/sdb /mnt/ost
+
+client: 18.04
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-client-modules-4.15.0-72-generic_2.12.5-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-client-utils_2.12.5-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-dev_2.12.5-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-iokit_2.12.5-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-source_2.12.5-1_all.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-tests_2.12.5-1_amd64.deb
+dpkg -i *
+apt --fix-broken install
+
+modprobe lustre
+mount -t lustre 172.16.0.130@tcp:/lustrOST /tmp/lustre1
+
+16.04
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-client-modules-4.4.0-142-generic_2.10.8-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-utils_2.10.8-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-dev_2.10.8-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-iokit_2.10.8-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-source_2.10.8-1_all.deb
+wget https://downloads.whamcloud.com/public/lustre/latest-2.10-release/ubuntu1604/client/lustre-tests_2.10.8-1_amd64.deb
+apt --fix-broken install
