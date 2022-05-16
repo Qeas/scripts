@@ -1,5 +1,6 @@
 env GIT_TERMINAL_PROMPT=1 go get -v bitbucket.eng-us.tegile.com/eco/exascaler-csi-file-driver/...
 git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.org/"
+git config --global url."ssh://git@bitbucket.eng-us.tegile.com:7999".insteadOf "https://bitbucket.eng-us.tegile.com/"
 
 # golang
 wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
@@ -138,3 +139,5 @@ docker run --network host --privileged --interactive --tty --entrypoint /bin/bas
 cp /host/tmp/chroot-host-wrapper.sh .
 ln -s chroot-host-wrapper.sh mount
 ./mount -t lustre 10.3.196.24@tcp:/csi /tmp/dir1
+
+git config --global --add url."git@github.com:".insteadOf "https://github.com/"
