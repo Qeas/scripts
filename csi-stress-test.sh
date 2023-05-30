@@ -6,7 +6,6 @@ DURATION=0.01
 
 
 
-
 case $DRIVER in
     "nexentastor_file") REPO=git@github.com:Nexenta/nexentastor-csi-driver.git && DRIVER_NAME=nexentastor-csi-driver;;
     "nexentastor_block") REPO=git@github.com:Nexenta/nexentastor-csi-driver-block.git && DRIVER_NAME=nexentastor-csi-driver-block;;
@@ -20,8 +19,10 @@ cd csi-stress-test
 rm -rf $DRIVER_NAME
 git clone $REPO --branch $BRANCH && cd $DRIVER_NAME
 
-VERSION=master make container-build
-kubectl create secret generic $DRIVER_NAME-config --from-file=tests/csi-sanity/driver-config-csi-sanity.yaml
+VERSION=master make container-buildtests/
+if [ $PREFIX = 'nexentastor' ]; then CONFIG=deploy/scripts/stress-test/$DRIVER_NAME-config.yaml; else CONFIG=tests/csi-sanity/driver-config-csi-sanity.yaml; fi
+
+kubectl create secret generic $DRIVER_NAME-config --from-file=$CONFIG
 
 case $DRIVER in
     "nexentastor_file"|"nexentastor_block") sed -i -e "s/nexenta\///g" deploy/kubernetes/$DRIVER_NAME.yaml;;
@@ -80,13 +81,17 @@ echo "Leaving the pods running IO for $DURATION hours"
 sleep $(echo "scale=1; $DURATION * 3600" | bc)
 
 cd ../
-DATE=$(date "+%y-%m-%d_%H:%M:%S")
-#LOG_FOLDER=logs/$DATE_$DRIVER_$BRANCH
-#echo LOG_FOLDER = $LOG_FOLDER
-mkdir -p $LOG_FOLDER
+rm logs/*.log
 PODS=$(kubectl get pod --no-headers | awk '{print $1}')
-for pod in $PODS; do kubectl logs $pod --all-containers > $DATE/$pod.log; done
+for pod in $PODS; do kubectl logs $pod --all-containers > logs/$pod.log; done
+kubectl get po > logs/pods.out.log
+DATE=$(date "+%y-%m-%d_%H-%M-%S")
+tar -czvf $DATE.tar.gz logs/*.log
 
+SUCCESS=true
+RESTARTS=$(kubectl get pod --no-headers | awk '{print $4}')
+for r in $RESTARTS ; do if [ $r != 0 ]; then SUCCESS=false; fi; done
+if [ $SUCCESS = "false" ]; then echo "Some pods had restarts, marking build as failed"; exit 1; fi
 
 
 # Cleanup
@@ -99,6 +104,7 @@ case $DRIVER in
     "exascaler_file") REPO=ssh://git@bitbucket.eng-us.tegile.com:7999/eco/exascaler-csi-file-driver.git && DRIVER_NAME=exascaler-csi-file-driver;;
 esac
 
+cd csi-stress-test/$DRIVER_NAME
 FILE="tests/deploy/scripts/stress-test/deploy-stress-test.yaml";
 echo "Removing pods"
 COUNTER=0

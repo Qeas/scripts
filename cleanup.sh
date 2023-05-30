@@ -16,3 +16,7 @@ ns5:
 for i in $(fs list -O basic -o path | grep csiDriverDataset/sanity); do fs destroy -fyRr $i; done
 for i in $(fs list -O basic -o path | grep csiDriverDataset/sanity); do fs destroy -fyRr $i; done
 for i in $(snap list -O basic -o path | grep nginx-persistent@snapshot-); do snap destroy -yRr $i; done
+
+for i in $(lunmapping list -O basic -o id ); do lunmapping destroy -u $i; done
+for i in $(iscsitarget list -O basic -o name | grep "-"); do iscsitarget destroy $i; done
+for i in $(targetgroup list -O basic -o name | grep "-"); do targetgroup destroy $i; done

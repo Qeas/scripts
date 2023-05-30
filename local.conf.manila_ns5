@@ -1,0 +1,15 @@
+[[local|localrc]]
+ADMIN_PASSWORD="stack"
+DATABASE_PASSWORD="stack"
+RABBIT_PASSWORD="stack"
+SERVICE_PASSWORD="stack"
+SERVICE_TOKEN="stack"
+USE_PYTHON3="True"
+PYTHON3_VERSION="3.8"
+
+enable_plugin manila $GIT_BASE/openstack/manila $MANILA_BRANCH
+enable_plugin manila-ui $GIT_BASE/openstack/manila-ui $MANILA_UI_BRANCH
+enable_plugin manila-tempest-plugin $GIT_BASE/openstack/manila-tempest-plugin $MANILA_TEMPEST_PLUGIN_BRANCH
+
+ENABLED_SHARE_PROTOCOLS="NFS"
+SHARE_DRIVER="manila.share.drivers.nexenta.ns5.nexenta_nas.NexentaNasDriver"

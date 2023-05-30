@@ -1,0 +1,27 @@
+
+echo development >/etc/nef/environment
+
+
+and then just restart nef with svcadm. It should say in the begining something like:
+
+[09:42:29.425] [         core] [ info] Starting NEF in development environment
+
+in logs.
+
+To reset back just remove this file and restart again.
+
+
+
+There is a way to temporary set debug/trace logging for any particular worker even without restart:
+
+bin/nefclient sysconfig setLoggerLevel '{level: "debug"}'
+It should work until next restart/reboot
+
+echo development >/etc/nef/environment
+nefclient sysconfig setProperty  '{id: "worker.rest.traceRequests", value: true, persistent: true}'
+or
+/usr/nef/bin/nefclient sysconfig setProperty  '{id: "worker.rest.traceRequests", value: true, persistent: true}'
+svcadm restart nef
+
+rm /etc/nef/environment
+svcadm restart nef

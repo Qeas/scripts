@@ -1,0 +1,52 @@
+cmd = ['connect', '-a', portal.address, '-s', portal.port,
+                       '-t', portal.transport, '-n', target.nqn, '-Q', '128',
+                       '-l', '-1']
+
+tempest.conf:
+
+[volume-feature-enabled]
+api_extensions = OS-SCH-HNT,backups,capabilities,cgsnapshots,consistencygroups,encryption,os-admin-actions,os-availability-zone,os-extended-services,os-extended-snapshot-attributes,os-hosts,os-quota-class-sets,os-quota-sets,os-services,os-snapshot-actions,os-snapshot-manage,os-snapshot-unmanage,os-types-extra-specs,os-types-manage,os-used-limits,os-vol-host-attr,os-vol-image-meta,os-vol-mig-status-attr,os-vol-tenant-attr,os-volume-actions,os-volume-encryption-metadata,os-volume-manage,os-volume-transfer,os-volume-type-access,os-volume-unmanage,qos-specs,scheduler-stats
+backup = False
+volume_revert = False
+extend_attached_volume = False
+manage_volume = False
+manage_snapshot = False
+snapshot = False
+clone = False
+extend_attached_encrypted_volume = False
+
+[compute-feature-enabled]
+swap_volume = True
+stable_rescue = True
+shelve_migrate = True
+vnc_console = True
+scheduler_enabled_filters = AvailabilityZoneFilter,ComputeFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,SameHostFilter,DifferentHostFilter
+hostname_fqdn_sanitization = True
+attach_encrypted_volume = True
+live_migrate_back_and_forth = False
+block_migration_for_live_migration = False
+change_password = False
+live_migration = False
+resize = False
+personality = False
+
+
+
+
+liberty/mitaka:
+tox -eall -- --concurrency=1 volume
+after mitaka:
+tempest run --concurrency=1 --regex TestVolumeSwap | tee tempest.out
+tempest run --concurrency=1 --regex ^(?=.*volume).* | tee tempest.out
+
+tempest run --concurrency=1 --regex '^(?=.*volume)(?!.*test_unmanage_manage_snapshot)(?!.*manage_volume)(?!.*snapshot*)(?!.*clone*)(?!.*Cascade*)(?!.*test_volume_boot_pattern*).*' | tee tempest.out
+
+
+
+tempest run --concurrency=1 --regex tempest.scenario.test_volume_boot_pattern.TestVolumeBootPattern.test_boot_server_from_encrypted_volume_luks
+tempest.api.volume.test_volumes_extend.VolumesExtendTest.test_volume_extend
+
+
+
+
+tempest run --concurrency=1 --regex tempest.api.compute.servers.test_server_rescue_negative.ServerRescueNegativeTestJSON.test_rescued_vm_detach_volume

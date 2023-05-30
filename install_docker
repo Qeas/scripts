@@ -1,10 +1,10 @@
 env GIT_TERMINAL_PROMPT=1 go get -v bitbucket.eng-us.tegile.com/eco/exascaler-csi-file-driver/...
-git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.org/"
-git config --global url."ssh://git@bitbucket.eng-us.tegile.com:7999".insteadOf "https://bitbucket.eng-us.tegile.com/"
+git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.com/"
+git config --global url."git@bitbucket.eng-us.tegile.com:".insteadOf "https://bitbucket.eng-us.tegile.com/"
 
 # golang
-wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.13.1.linux-amd64.tar.gz
+wget https://dl.google.com/go/go1.20.2.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.20.2.linux-amd64.tar.gz
 mkdir -p /$HOME/go/bin
 cat <<EOF >$HOME/.bashrc
 export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
@@ -36,14 +36,26 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y kubectl
-echo 'source <(kubectl completion bash)' >>~/.bashrc && source .bashrc
+echo 'source <(kubectl completion bash)' >>~/.bashrc && source ~/.bashrc
 
 # install minikube
+sudo apt install conntrack
+VERSION="v1.26.0" # check latest version in /releases page
+curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
   && chmod +x minikube
 sudo install minikube /usr/local/bin
-sudo minikube start --vm-driver=none  --extra-config=kubelet.cgroup-driver=systemd --feature-gates=VolumeSnapshotDataSource=true,VolumePVCDataSource=true,ExpandInUsePersistentVolumes=true,ExpandCSIVolumes=true,ExpandPersistentVolumes=true,ServiceTopology=true,CSINodeInfo=true,BlockVolume=true,CSIBlockVolume=true
+sudo minikube start --vm-driver=none --extra-config=kubelet.cgroup-driver=systemd --feature-gates=VolumeSnapshotDataSource=true,VolumePVCDataSource=true,ExpandInUsePersistentVolumes=true,ExpandCSIVolumes=true,ExpandPersistentVolumes=true,ServiceTopology=true,CSINodeInfo=true,BlockVolume=true,CSIBlockVolume=true
 #,EndpointSlice=true
+minikube start --vm-driver=none --extra-config=kubelet.cgroup-driver=systemd 
+[19:46] Eugene Ivanov
+minikube start --vm-driver=none --force-systemd=true --container-runtime=containerd
+А до этого надо в конфиге containerd (/etc/containerd/config.toml) поменять SystemdCgroup => true и установить crictl
+
+
 #sudo minikube delete
 
 # nexenta-csi-driver for dev
@@ -141,3 +153,23 @@ ln -s chroot-host-wrapper.sh mount
 ./mount -t lustre 10.3.196.24@tcp:/csi /tmp/dir1
 
 git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+git config --global user.name "Alexey Khodos"
+git config --global user.email "akhodos@tintri.com"
+git config --global credential.helper store
+
+git clone/push to create git-credentials file
+
+go.mod
+replace bitbucket.eng-us.tegile.com/eco/go-intelliflash => /go/src/bitbucket.eng-us.tegile.com/eco/intelliflash-csi-block-driver/go-intelliflash
+
+helm:
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+k3s:
+curl -sfL https://get.k3s.io | sh -
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+source <(kubectl completion bash)
+echo "source <(k3s completion bash)" >> ~/.bashrc

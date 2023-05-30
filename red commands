@@ -1,0 +1,75 @@
+ssh red-devhead-0.red.datadirectnet.com
+alias ki='kubert --rack dev-intel'
+
+kubert create --name ak-redvm-arm-1 --rack dev1 --model client-arm64-u22.04 --nfs-home
+kubert expose ak-redvm-3 --tcp 4420
+kubert expose ak-redvm-2 --tcp 22
+kubert create --name ak-redvm-1 --rack dev-intel --model red-ready --nfs-home --ssh-pub-keys /home/akhodos/.ssh
+ssh redvm1.virts.dev1.redlab.datadirectnet.com
+
+kubert create --name devstack05 --model red-ready --nfs-home
+kubert create --name minikube02 --rack dev-intel --model red-ready-amd64-u22 --nfs-home --override-image docker://quay.io/red/kubernetes:ubuntu-2204-buildbox-20230116
+kubert expose devstack2 --tcp 4420
+kubert expose devstack2 --tcp 0.0.0.0:443
+
+#Full cleanup :
+sudo redsetup --reset ; sudo apt purge -y redsetup ; docker system prune --all --force
+# download redsetup package:
+BUCKET_URL=https://storage.googleapis.com/ddn-redsetup-public && \
+DISTRO="ubuntu/$(lsb_release -rs)" && \
+wget $BUCKET_URL/$DISTRO/pkgs/redsetup_1.1.0-alpha.1_"$(dpkg --print-architecture)".deb?cache-time="$(date +$s)" \
+   -O /tmp/redsetup.deb
+sudo apt -y install /tmp/redsetup.deb
+#run on leader node :
+ip=$(ip a | grep 172.25. | awk '{print $2}' | awk -F / '{print $1}')
+sudo redsetup -realm-entry -realm-entry-secret abcdabcd -admin-password abcdabcd -ctrl-plane-ip $ip --skip-hardware-check
+redcli user login realm_admin -p abcdabcd
+redcli realm config generate
+redcli realm config update -f realm_config.yaml
+redcli cluster create red
+redcli tenant create red
+redcli subtenant create red
+redcli dataset create red
+redcli bdev create dev1 -C 1G
+
+client:
+sudo apt install nvme-cli
+sudo modprobe nvme-tcp
+sudo apt install linux-modules-extra-gke
+
+sudo nvme discover -t tcp -a 10.25.116.65 -s 4420
+sudo nvme connect -t tcp -a 172.25.116.65 -s 4420 -n nqn.2023-01.com.ddn.red.ten17.sub17:uuid:7b34eaf2-bb97-4ea9-8342-31eeb6b96c61
+sudo fdisk -l
+
+sudo netstat -tulpn | grep LISTEN | grep 4420
+
+sudo nvme connect -t tcp -a 10.25.51.189 -s 4420 -n nqn.2014-08.org.nvmexpress:uuid:83f255f2-60f8-412d-a0bb-21e384517a28
+
+modprobe error fix:
+9  sudo apt update
+10  sudo apt install linux-modules-extra-5.19.0-35-generic
+11  modprobe nvme-tcp
+
+
+3.2 Creating a multi-node  cluster
+
+BUCKET_URL=https://storage.googleapis.com/ddn-redsetup-public && \
+DISTRO="ubuntu/$(lsb_release -rs)" && \
+wget $BUCKET_URL/$DISTRO/pkgs/redsetup_1.1.0-alpha.1_"$(dpkg --print-architecture)".deb?cache-time="$(date +$s)" \
+   -O /tmp/redsetup.deb
+sudo apt -y install /tmp/redsetup.deb
+
+
+From the remaining VMs, run the following redsetup command to register those nodes as realm members:
+
+sudo redsetup --realm-entry-address 172.25.51.109 --realm-entry-secret abcdabcd
+
+
+
+Back on realm-entry (first) node, create the realm and RED cluster:
+
+redcli user login realm_admin -p abcdabcd
+redcli realm config generate
+# Note: the "config generate" command output will state the number of nodes in the realm - verify this is matches the number of VMs you created
+# You can also run "redcli inventory show" to see the list of registered nodes and their resources.
+redcli realm config update -f realm_config.yaml

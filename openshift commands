@@ -1,0 +1,52 @@
+wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/crc/latest/crc-linux-amd64.tar.xz
+tar -xvf crc-linux-amd64.tar.xz
+alias crc=/home/openshift/crc-linux-2.13.1-amd64/crc
+# vi /etc/modprobe.d/blacklist.conf
+# blacklist vmw_vsock_vmci_transport
+# reboot
+sudo modprobe vhost_vsock
+loginctl enable-linger openshift 
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+crc config set network-mode user
+crc cleanup
+crc setup
+crc start
+eval $(crc oc-env)
+oc login -u kubeadmin https://api.crc.testing:6443 -p SfYsv-x5Wjs-oLoyY-reo9C
+oc login -u developer https://api.crc.testing:6443
+echo 'source <(oc completion bash)' >>~/.bashrc && source .bashrc
+
+oc create clusterrolebinding developer-admin-binding --clusterrole=cluster-admin --user=kubeadmin
+
+The server is accessible via web console at:
+  https://console-openshift-console.apps-crc.testing
+
+Log in as administrator:
+  Username: kubeadmin
+  Password: SfYsv-x5Wjs-oLoyY-reo9C
+
+Log in as user:
+  Username: developer
+  Password: developer
+
+Use the 'oc' command line interface:
+  $ eval $(crc oc-env)
+  $ oc login -u developer https://api.crc.testing:6443
+
+oc adm policy add-scc-to-user anyuid -z default -n csi
+oc adm policy add-scc-to-user hostmount-anyuid -z default -n csi
+
+oc adm policy add-scc-to-user anyuid -z csi
+oc adm policy add-scc-to-user hostmount-anyuid -z csi
+
+
+oc adm policy add-scc-to-user anyuid -z exascaler-csi-node-service-account -n csi
+oc adm policy add-scc-to-user hostmount-anyuid -z exascaler-csi-node-service-account -n csi
+oc adm policy add-scc-to-user anyuid -z exascaler-csi-controller-service-account -n csi
+oc adm policy add-scc-to-user hostmount-anyuid -z exascaler-csi-controller-service-account -n csi
+
+
+cleanup:
+crc delete
+crc cleanup
+rm -rf ~/.crc/

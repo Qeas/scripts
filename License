@@ -1,0 +1,12 @@
+DDN licenses the EXA CSI driver under its license at:  https://www.ddn.com/?wpdmdl=40131
+
+The DDN license is subject to 3rd party licenses applicable to modules of the exa-csi-driver as listed below. 
+
+ 
+
+Here is list of 3rd party modules’ licenses:
+
+|Components |License Link|
+|--- |--- |
+|github.com/antonfisher/nested-logrus-formatter|https://github.com/antonfisher/nested-logrus-formatter/blob/master/LICENSE|
+

@@ -1,0 +1,39 @@
+sudo vi /root/.docker/config.json
+
+{
+	"auths": {
+		"tintri-dockerv2-local.jfrog.io": {
+			"auth": "cnJldGhpbmFtQHRpbnRyaS5jb206TjIyUSNWeDlRcCR5"
+		}
+	}
+}
+
+sudo docker login https://tintri-dockerv2-local.jfrog.io/
+sudo docker pull tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5
+sudo docker pull nexenta/fusion-opensearch:1.3.9
+sudo docker tag tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5 nexenta/fusion:2.0.5
+sudo docker rmi tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5 nexenta/fusion-opensearch:1.3.5
+sudo rm /root/.docker/config.json
+
+
+
+history -c
+history -w
+
+
+jenkins code:
+
+FUSION_VM="Fusion-OVA"
+DATE=$(date '+%Y-%m-%d_%H-%M-%S')
+FOLDER="/fusion_ova_mount/${DATE}"
+mkdir -p ${FOLDER}
+OVA="${FOLDER}/fusion-${VERSION}.ova"
+ESXI_URL="vi://administrator@vsphere.local:Tegile123%21@10.204.86.167/DC1/vm"
+       
+echo "Exporting OVA from ${ESXI_URL}/${FUSION_VM}"
+ovftool --noSSLVerify --noImageFiles --overwrite --ipProtocol=IPv4 \
+     --ipAllocationPolicy=fixedPolicy ${ESXI_URL}/${FUSION_VM} ${OVA}
+
+md5sum ${OVA} > ${FOLDER}/fusion-${VERSION}.md5sum
+echo "OVA is available at http://10.204.86.116/${DATE}"
+

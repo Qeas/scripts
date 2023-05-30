@@ -42,7 +42,53 @@ mkfs.lustre --reformat --ost --fsname=lustre --mgsnode=172.16.0.134@tcp0 --index
 mkdir -p /mnt/ost
 mount -t lustre /dev/sdb /mnt/ost
 
-client: 18.04
+
+almalinux 8.7:
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-debuginfo-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-tests-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-tests-debuginfo-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-debuginfo-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-debugsource-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-devel-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-dkms-2.15.1-1.el8.noarch.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-tests-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-tests-debuginfo-2.15.1-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-iokit-2.15.1-1.el8.x86_64.rpm
+
+yum --nogpgcheck install *
+
+
+client: 22.04
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-client-modules-5.15.0-39-generic_2.15.2-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-client-utils_2.15.2-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-dev_2.15.2-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-iokit_2.15.2-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-source_2.15.2-1_all.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-tests_2.15.2-1_amd64.deb
+
+dpkg -i lustre*
+apt --fix-broken install
+
+modprobe lustre
+
+
+client: 20.04
+
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-client-modules-5.4.0-96-generic_2.15.0-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-client-utils_2.15.0-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-dev_2.15.0-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-iokit_2.15.0-1_amd64.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-source_2.15.0-1_all.deb
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.0/ubuntu2004/client/lustre-tests_2.15.0-1_amd64.deb
+dpkg -i *
+apt --fix-broken install
+
+modprobe lustre
+mount -t lustre 172.16.0.130@tcp:/lustrOST /tmp/lustre1
+
+18.04
 wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-client-modules-4.15.0-72-generic_2.12.5-1_amd64.deb
 wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-client-utils_2.12.5-1_amd64.deb
 wget https://downloads.whamcloud.com/public/lustre/latest-2.12-release/ubuntu1804/client/lustre-dev_2.12.5-1_amd64.deb

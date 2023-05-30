@@ -1,6 +1,17 @@
+sudo useradd -s /bin/bash -d /opt/stack -m  -p $(openssl passwd -1 1) stack
+sudo chmod +x /opt/stack
+echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
+sudo cp -rf .ssh /opt/stack/ && sudo chown -R stack /opt/stack/.ssh
+sudo -u stack -i
+
+ssh-keyscan  github.com >> ~/.ssh/known_hosts
+git clone -b stable/zed https://opendev.org/openstack/devstack && cd devstack
+
+echo '
 [[local|localrc]]
 disable_service etcd3
 enable_service tempest
+enable_plugin red https://github.com/qeas/red-cinder-driver.git
 
 GIT_BASE="https://opendev.org"
 OVN_L3_CREATE_PUBLIC_NETWORK="True"
@@ -35,8 +46,8 @@ IP_VERSION="4"
 API_RATE_LIMIT="False"
 INSTALL_TEMPEST="True"
 TEMPEST_RUN_VALIDATION="True"
-DEFAULT_INSTANCE_USER="cirros"
-DEFAULT_INSTANCE_PASSWORD="cubswin:)"
+# DEFAULT_INSTANCE_USER="cirros"
+# DEFAULT_INSTANCE_PASSWORD="cubswin:)"
 CINDER_ISCSI_HELPER="tgtadm"
 CINDER_IMG_CACHE_ENABLED="False"
 CINDER_COORDINATION_URL="file://\$state_path"
@@ -49,12 +60,86 @@ TEMPEST_VOLUME_MANAGE_VOLUME="False"
 TEMPEST_VOLUME_MANAGE_SNAPSHOT="False"
 TEMPEST_VOLUME_SNAPSHOT="False"
 TEMPEST_VOLUME_CLONE="False"
-TEMPEST_VOLUME_BACKEND_NAMES=ns5_nfs
+TEMPEST_VOLUME_BACKEND_NAMES=red
 LOG_COLOR=True
 KEYSTONE_SERVICE_URI=127.0.0.1
+TEMPEST_VOLUME_DRIVER=cinder.volume.drivers.red.nvmeof.RedNvmeOFDriver
+TEMPEST_VOLUME_VENDOR="Red"
+TEMPEST_STORAGE_PROTOCOL=NVMeOF
+TEMPEST_HTTP_IMAGE=http://127.0.0.1/
 TEMPEST_LOG_DIR=/opt/stack/tempest
 TEMPEST_LOG_FILE=tempest.log
 TEMPEST_VOLUME_REVERT_TO_SNAPSHOT=false
+
+CINDER_ENABLED_BACKENDS=red
+[[post-config|$CINDER_CONF]]
+[DEFAULT]
+suppress_requests_ssl_warning = True
+verify_glance_signatures = disabled
+executor_thread_pool_size = 1
+
+[red]
+volume_driver=cinder.volume.drivers.red.nvmeof.RedNvmeOFDriver
+red_rest_address=ak-redvm-2.virts.devintel.redlab.datadirectnet.com
+red_user=realm_admin
+red_password=abcdabcd
+red_cluster=red
+red_tenant=red
+red_subtenant=red
+red_dataset=red
+volume_backend_name=red
+red_data_address=172.25.51.120
+image_volume_cache_enabled = false
+
+[[post-config|$NOVA_CONF]]
+[libvirt]
+cpu_mode = custom
+' > local.conf
+
+./stack.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logs:
+journalctl -u devstack@*
+journalctl -u devstack@n-cpu
+journalctl -u devstack@c-vol
+journalctl -u devstack@c-*
+
+
+
+
+
+
+
+
+echo '
+
+[[local|localrc]]
+ADMIN_PASSWORD=secret
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
 
 # Settings to enable use of Driver
 CINDER_ENABLED_BACKENDS=ns5_nfs
@@ -73,9 +158,15 @@ nas_host=10.3.199.28
 nexenta_rest_address = 10.3.199.28
 nexenta_user = admin
 nexenta_password = Nexenta@1
-nas_share_path=pool1/nfs_stack
+nas_share_path=pool1/nfs_share
 nas_mount_options=vers=4
 volume_backend_name=ns5_nfs
 nexenta_sparsed_volumes=True
 nas_secure_file_operations=False
 image_volume_cache_enabled = false
+
+' > local.conf
+
+./stack.sh
+
+
