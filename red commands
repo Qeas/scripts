@@ -7,18 +7,20 @@ kubert expose ak-redvm-2 --tcp 22
 kubert create --name ak-redvm-1 --rack dev-intel --model red-ready --nfs-home --ssh-pub-keys /home/akhodos/.ssh
 ssh redvm1.virts.dev1.redlab.datadirectnet.com
 
-kubert create --name devstack05 --model red-ready --nfs-home
-kubert create --name minikube02 --rack dev-intel --model red-ready-amd64-u22 --nfs-home --override-image docker://quay.io/red/kubernetes:ubuntu-2204-buildbox-20230116
+kubert create --name devstack01 --model red-ready --nfs-home
+kubert create --name devstack01 --rack dev-intel --model red-ready-amd64-u22 --nfs-home --override-image docker://quay.io/red/kubernetes:ubuntu-2204-buildbox-20230116
 kubert expose devstack2 --tcp 4420
 kubert expose devstack2 --tcp 0.0.0.0:443
 
 #Full cleanup :
 sudo redsetup --reset ; sudo apt purge -y redsetup ; docker system prune --all --force
 # download redsetup package:
-BUCKET_URL=https://storage.googleapis.com/ddn-redsetup-public && \
-DISTRO="ubuntu/$(lsb_release -rs)" && \
-wget $BUCKET_URL/$DISTRO/pkgs/redsetup_1.1.0-alpha.1_"$(dpkg --print-architecture)".deb?cache-time="$(date +$s)" \
-   -O /tmp/redsetup.deb
+
+BUCKET_URL=https://storage.googleapis.com/ddn-redsetup-public \
+  && DISTRO="ubuntu/$(lsb_release -rs)/pkgs"  \
+  &&   wget $BUCKET_URL/$DISTRO/redsetup_1.0.0-alpha.1_"$(dpkg --print-architecture)".deb?cache-time="$(date +$s)" \
+  -O /tmp/redsetup.deb && sudo apt update && sudo apt install -y /tmp/redsetup.deb
+
 sudo apt -y install /tmp/redsetup.deb
 #run on leader node :
 ip=$(ip a | grep 172.25. | awk '{print $2}' | awk -F / '{print $1}')
@@ -29,8 +31,11 @@ redcli realm config update -f realm_config.yaml
 redcli cluster create red
 redcli tenant create red
 redcli subtenant create red
+redcli user grant realm_admin red
+redcli user grant realm_admin red/red
+redcli user grant realm_admin red/red/red
 redcli dataset create red
-redcli bdev create dev1 -C 1G
+redcli volume create dev1 -C 1G
 
 client:
 sudo apt install nvme-cli

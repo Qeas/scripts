@@ -1,19 +1,9 @@
-sudo useradd -s /bin/bash -d /opt/stack -m  -p $(openssl passwd -1 1) stack
-sudo chmod +x /opt/stack
-echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
-sudo cp -rf .ssh /opt/stack/ && sudo chown -R stack /opt/stack/.ssh
-sudo -u stack -i
-
-
-ssh-keyscan  github.com >> ~/.ssh/known_hosts
-git clone https://opendev.org/openstack/devstack && cd devstack
-
 
 echo '
 [[local|localrc]]
 disable_service etcd3
 enable_service tempest
-enable_plugin red https://github.com/DDNStorage/red-cinder-driver
+enable_plugin red git@github.com:DDNStorage/red-cinder-driver.git
 
 GIT_BASE="https://opendev.org"
 OVN_L3_CREATE_PUBLIC_NETWORK="True"
@@ -99,38 +89,3 @@ cpu_mode = custom
 ' > local.conf
 
 ./stack.sh
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-logs:
-journalctl -u devstack@*
-journalctl -u devstack@n-cpu
-journalctl -u devstack@c-vol
-journalctl -u devstack@c-*
-
-
-
-
-
-
-

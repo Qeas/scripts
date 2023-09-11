@@ -46,7 +46,8 @@ tempest run --concurrency=1 --regex '^(?=.*volume)(?!.*test_unmanage_manage_snap
 tempest run --concurrency=1 --regex tempest.scenario.test_volume_boot_pattern.TestVolumeBootPattern.test_boot_server_from_encrypted_volume_luks
 tempest.api.volume.test_volumes_extend.VolumesExtendTest.test_volume_extend
 
-
-
-
-tempest run --concurrency=1 --regex tempest.api.compute.servers.test_server_rescue_negative.ServerRescueNegativeTestJSON.test_rescued_vm_detach_volume
+tempest.api.volume.admin.test_groups.GroupsV314Test.test_create_group_from_group
+tempest.api.compute.servers.test_server_actions.ServerActionsV293TestJSON.test_rebuild_volume_backed_server
+tempest.scenario.test_shelve_instance.TestShelveInstance.test_shelve_volume_backed_instance
+tempest.api.compute.servers.test_device_tagging.TaggedBootDevicesTest.test_tagged_boot_devices
+tempest.api.compute.servers.test_device_tagging.TaggedBootDevicesTest_v242.test_tagged_boot_devices

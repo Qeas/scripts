@@ -1,6 +1,7 @@
 wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/crc/latest/crc-linux-amd64.tar.xz
+wget https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/crc/2.20.0/crc-linux-amd64.tar.xz
 tar -xvf crc-linux-amd64.tar.xz
-alias crc=/home/openshift/crc-linux-2.13.1-amd64/crc
+alias crc=/home/openshift/crc-linux-2.23.0-amd64/crc
 # vi /etc/modprobe.d/blacklist.conf
 # blacklist vmw_vsock_vmci_transport
 # reboot
@@ -10,11 +11,16 @@ export XDG_RUNTIME_DIR=/run/user/$(id -u)
 crc config set network-mode user
 crc cleanup
 crc setup
+crc setup -b https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/bundles/openshift/4.12.9/crc_libvirt_4.12.9_amd64.crcbundle
+
+crc config set kubeadmin-password admin
 crc start
+crc start -p ~/pull-secret --log-level debug -b ~/.crc/cache/crc_libvirt_4.12.9_amd64.crcbundle
+crc start -n 8.8.8.8 -p ~/pull-secret --log-level debug -c 8 -m 16384
 eval $(crc oc-env)
-oc login -u kubeadmin https://api.crc.testing:6443 -p SfYsv-x5Wjs-oLoyY-reo9C
+oc login -u kubeadmin https://api.crc.testing:6443 -p 7FZyt-5KeJn-xP5pz-JxZdn
 oc login -u developer https://api.crc.testing:6443
-echo 'source <(oc completion bash)' >>~/.bashrc && source .bashrc
+echo 'source <(oc completion bash)' >>~/.bashrc && source ~/.bashrc
 
 oc create clusterrolebinding developer-admin-binding --clusterrole=cluster-admin --user=kubeadmin
 
@@ -23,7 +29,7 @@ The server is accessible via web console at:
 
 Log in as administrator:
   Username: kubeadmin
-  Password: SfYsv-x5Wjs-oLoyY-reo9C
+  Password: v7qPo-FDDuD-wHvbo-og2Gj
 
 Log in as user:
   Username: developer
@@ -50,3 +56,34 @@ cleanup:
 crc delete
 crc cleanup
 rm -rf ~/.crc/
+
+rm -rf /Users/akhodos/.crc/
+
+
+
+sudo subscription-manager register --org=6022982 --activationkey=openshift-01
+
+
+lnet:
+modprobe -v lnet
+modprobe -v ksocklnd
+modprobe -v mgc
+modprobe -v osc
+lnetctl lnet configure --all
+modprobe -v lustre
+
+mount -t lustre 10.204.86.114@tcp:/testfs /mnt
+
+unmount() {
+modprobe -r lustre
+modprobe -r osc
+modprobe -r mgc
+lnetctl lnet unconfigure
+modprobe -r ksocklnd
+modprobe -r lnet
+lustre_rmmod
+}
+
+vcenter: 10.3.199.250 (vcsa7-250.ilya.vdi) administrator@vsphere.local/Tegile123!
+esx'ы: 10.3.199.51-54 (esx7-51.ilya.vdi...) root/Tegile123!
+VM: 10.3.199.70 (это ubuntu desktop) user/tegile, root/tegile, RDP: user/Tegile123!

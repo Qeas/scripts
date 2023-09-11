@@ -7,15 +7,26 @@ sudo vi /root/.docker/config.json
 		}
 	}
 }
-
 sudo docker login https://tintri-dockerv2-local.jfrog.io/
-sudo docker pull tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5
-sudo docker pull nexenta/fusion-opensearch:1.3.9
-sudo docker tag tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5 nexenta/fusion:2.0.5
-sudo docker rmi tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.5 nexenta/fusion-opensearch:1.3.5
+
+new repo:
+vi /etc/docker/daemon.json
+{
+"insecure-registries" : [ "10.204.86.117:5000","docker-registry.ui.fc.tintri.com" ]
+}
+systemctl restart docker
+docker login docker-registry.ui.fc.tintri.com -u user -p tintri@!
+docker pull nexenta/fusion-opensearch:1.3.11
+docker pull docker-registry.ui.fc.tintri.com/fusion2-release:2.0.7
+sudo docker tag docker-registry.ui.fc.tintri.com/fusion2-release:2.0.7 nexenta/fusion:2.0.7
+sudo docker rmi docker-registry.ui.fc.tintri.com/fusion2-release:2.0.7 nexenta/fusion:2.0.6
+rm /etc/docker/daemon.json
+
+sudo docker pull tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.6
+sudo docker pull nexenta/fusion-opensearch:1.3.11
+sudo docker tag tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.6 nexenta/fusion:2.0.6
+sudo docker rmi tintri-dockerv2-local.jfrog.io/fusion2-release:2.0.6 nexenta/fusion:2.0.5 nexenta/fusion-opensearch:1.3.9
 sudo rm /root/.docker/config.json
-
-
 
 history -c
 history -w

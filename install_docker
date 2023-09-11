@@ -2,6 +2,10 @@ env GIT_TERMINAL_PROMPT=1 go get -v bitbucket.eng-us.tegile.com/eco/exascaler-cs
 git config --global url."git@bitbucket.org:".insteadOf "https://bitbucket.com/"
 git config --global url."git@bitbucket.eng-us.tegile.com:".insteadOf "https://bitbucket.eng-us.tegile.com/"
 
+git config --global url."ssh://git@bitbucket.eng-us.tegile.com:7999/".insteadOf "https://bitbucket.eng-us.tegile.com/scm/"
+[url "ssh://git@bitbucket.eng-us.tegile.com:7999/"]
+    insteadOf = https://bitbucket.eng-us.tegile.com/scm/
+
 # golang
 wget https://dl.google.com/go/go1.20.2.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf go1.20.2.linux-amd64.tar.gz

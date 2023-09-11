@@ -6,10 +6,49 @@ SERVICE_PASSWORD="stack"
 SERVICE_TOKEN="stack"
 USE_PYTHON3="True"
 PYTHON3_VERSION="3.8"
+GIT_BASE=https://opendev.org/
 
-enable_plugin manila $GIT_BASE/openstack/manila $MANILA_BRANCH
-enable_plugin manila-ui $GIT_BASE/openstack/manila-ui $MANILA_UI_BRANCH
-enable_plugin manila-tempest-plugin $GIT_BASE/openstack/manila-tempest-plugin $MANILA_TEMPEST_PLUGIN_BRANCH
+enable_plugin manila $GIT_BASE/openstack/manila
+enable_plugin manila-ui $GIT_BASE/openstack/manila-ui
+enable_plugin manila-tempest-plugin $GIT_BASE/openstack/manila-tempest-plugin
 
+USE_PYTHON3="True"
+CEILOMETER_BRANCH="master"
+CINDER_BRANCH="master"
+CINDER_TEMPEST_PLUGIN_BRANCH="master"
+DEFAULT_BRANCH="master"
+DEVSTACK_BRANCH="master"
+GLANCE_BRANCH="master"
+HEAT_BRANCH="master"
+HORIZON_BRANCH="master"
+IRONIC_BRANCH="master"
+KEYSTONE_BRANCH="master"
+KEYSTONECLIENT_BRANCH="master"
+MANILA_BRANCH="refs/changes/16/886616/1"
+MANILA_UI_BRANCH="master"
+MANILACLIENT_BRANCH="master"
+MANILA_TEMPEST_PLUGIN_BRANCH="master"
+NEUTRON_BRANCH="master"
+NEXENTA_BRANCH="master"
+NOVA_BRANCH="master"
+NOVACLIENT_BRANCH="master"
+REQUIREMENTS_BRANCH="master"
+SAHARA_BRANCH="master"
+SWIFT_BRANCH="master"
+TEMPEST_BRANCH="master"
+TROVE_BRANCH="master"
 ENABLED_SHARE_PROTOCOLS="NFS"
 SHARE_DRIVER="manila.share.drivers.nexenta.ns5.nexenta_nas.NexentaNasDriver"
+MANILA_ENABLED_BACKENDS=ns5_manila1
+
+MANILA_SHARE_BACKEND_NAME="ns5_manila1"
+MANILA_OPTGROUP_ns5_manila1_nexenta_rest_address="10.3.199.28"
+MANILA_OPTGROUP_ns5_manila1_nexenta_rest_port="8443"
+MANILA_OPTGROUP_ns5_manila1_nexenta_rest_protocol="https"
+MANILA_OPTGROUP_ns5_manila1_nexenta_user="admin"
+MANILA_OPTGROUP_ns5_manila1_nexenta_password="Nexenta@1"
+MANILA_OPTGROUP_ns5_manila1_nexenta_nas_host="10.3.199.28"
+MANILA_OPTGROUP_ns5_manila1_nexenta_pool="pool1"
+MANILA_OPTGROUP_ns5_manila1_nexenta_nfs_share="manila_nfs"
+MANILA_OPTGROUP_ns5_manila1_driver_handles_share_servers="False"
+MANILA_OPTGROUP_ns5_manila1_share_driver="manila.share.drivers.nexenta.ns5.nexenta_nas.NexentaNasDriver"

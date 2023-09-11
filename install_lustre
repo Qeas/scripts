@@ -42,23 +42,70 @@ mkfs.lustre --reformat --ost --fsname=lustre --mgsnode=172.16.0.134@tcp0 --index
 mkdir -p /mnt/ost
 mount -t lustre /dev/sdb /mnt/ost
 
+server create fs commands from Eugene:
+modprobe lnet
+lctl network up
+lctl list_nids
+mkfs.lustre --mgs --servicenode=10.204.86.114@tcp,192.168.98.114@tcp2 --reformat /dev/sdf1
+mount -t lustre /dev/sdf1 /mnt/mgs
+mkfs.lustre --mdt --mgsnode=10.204.86.114@tcp,192.168.98.114@tcp2 --reformat --fsname=testfs --index=0 --mkfsoptions='-O project'  /dev/sdb1
+mount -t lustre /dev/sdb1 /mnt/mdt1
+mkfs.lustre --ost --mgsnode=10.204.86.114@tcp,192.168.98.114@tcp2 --reformat --fsname=testfs --index=0 --mkfsoptions='-O project' /dev/sdc1
+mount -t lustre /dev/sdc1 /mnt/ost1/
+lctl conf_param testfs.quota.ost=ugp
+lctl conf_param testfs.quota.mdt=ugp
 
-almalinux 8.7:
+server configuration for unprivileged ports:
+/etc/modprobe.d/ko2iblnd.conf:
+options = require_privileged_port=0
+
+/etc/modprobe.d/lnet-unprivileged.conf:
+options lnet forwarding="enabled"
+options lnet accept=all
+
+
+
+
+
+almalinux 8.6:
+# for containers:
+# copy /etc/yum.repos.d/almalinux.repo to container
+yum install -y e2fsprogs
+
 wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-debuginfo-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-tests-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/kmod-lustre-client-tests-debuginfo-2.15.1-1.el8.x86_64.rpm
 wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-debuginfo-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-debugsource-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-devel-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-dkms-2.15.1-1.el8.noarch.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-tests-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-client-tests-debuginfo-2.15.1-1.el8.x86_64.rpm
-wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.1/el8.6/client/RPMS/x86_64/lustre-iokit-2.15.1-1.el8.x86_64.rpm
+rpm -ivh kmod-lustre-client-2.15.1-1.el8.x86_64.rpm
+rpm -ivh lustre-client-2.15.1-1.el8.x86_64.rpm
+modprobe lustre
+/usr/bin/mokutil --sb-state
+/usr/bin/mokutil --disable-validation
+shutdown -h now
+# disable secure boot in vm boot options
+modprobe lustre
+mount -t lustre 10.204.86.114@tcp:/testfs /mnt -v
 
-yum --nogpgcheck install *
+rhel 8.8:
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.3/el8.8/client/RPMS/x86_64/kmod-lustre-client-2.15.3-1.el8.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.3/el8.8/client/RPMS/x86_64/lustre-client-2.15.3-1.el8.x86_64.rpm
+rpm -ivh *.rpm
+modprobe lustre
+mount -t lustre 10.204.86.114@tcp:/testfs /mnt -v
 
+rhel 9.2:
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.3/el9.2/client/RPMS/x86_64/kmod-lustre-client-2.15.3-1.el9.x86_64.rpm
+wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.3/el9.2/client/RPMS/x86_64/lustre-client-2.15.3-1.el9.x86_64.rpm
+rpm -ivh kmod-lustre-client-2.15.3-1.el9.x86_64.rpm
+rpm -ivh lustre-client-2.15.3-1.el9.x86_64.rpm
+modprobe lustre
+mount -t lustre 10.204.86.114@tcp:/testfs /mnt
+
+lnet:
+sudo modprobe -v lnet
+sudo modprobe -v ksocklnd
+sudo modprobe -v mgc
+sudo modprobe -v osc
+sudo lnetctl lnet configure --all
+sudo modprobe -v lustre
 
 client: 22.04
 wget https://downloads.whamcloud.com/public/lustre/lustre-2.15.2/ubuntu2204/client/lustre-client-modules-5.15.0-39-generic_2.15.2-1_amd64.deb

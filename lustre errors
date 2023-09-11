@@ -1,0 +1,26 @@
+server:
+[Tue Aug 29 16:32:17 2023] Lustre: MGS: Connection restored to ffe3bc52-bd11-4492-9e5c-6c9cba4c6493 (at 10.128.3.24@tcp)
+[Tue Aug 29 16:32:18 2023] Lustre: testfs-OST0000: Connection restored to ffe3bc52-bd11-4492-9e5c-6c9cba4c6493 (at 10.128.3.24@tcp)
+[Tue Aug 29 16:32:18 2023] Lustre: Skipped 1 previous similar message
+
+[Tue Aug 29 17:33:25 2023] Lustre: MGS: haven't heard from client ffe3bc52-bd11-4492-9e5c-6c9cba4c6493 (at 10.128.3.24@tcp) in 230 seconds. I think it's dead, and I am evicting it. exp ffff8a7d4e992c00, cur 1693330423 expire 1693330273 last 1693330193
+[Tue Aug 29 17:33:25 2023] Lustre: Skipped 1 previous similar message
+
+
+
+client pod:
+[Tue Aug 29 16:32:27 2023] Lustre: Lustre: Build Version: 2.15.3
+[Tue Aug 29 16:32:27 2023] LNet: Added LNI 10.128.3.24@tcp [8/256/0/180]
+[Tue Aug 29 16:32:27 2023] LNet: Accept secure, port 988
+[Tue Aug 29 16:32:37 2023] Lustre: Mounted testfs-client
+
+[Tue Aug 29 17:30:01 2023] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[Tue Aug 29 17:30:01 2023] IPv6: ADDRCONF(NETDEV_CHANGE): b7161f491335d7a: link becomes ready
+[Tue Aug 29 17:30:01 2023] device b7161f491335d7a entered promiscuous mode
+[Tue Aug 29 17:30:03 2023] device b7161f491335d7a left promiscuous mode
+[Tue Aug 29 17:30:18 2023] LNetError: 3454219:0:(lib-move.c:2252:lnet_handle_find_routed_path()) peer 10.204.86.114@tcp has no available nets
+[Tue Aug 29 17:30:18 2023] Lustre: 3454219:0:(client.c:2289:ptlrpc_expire_one_request()) @@@ Request sent has failed due to network error: [sent 1693330218/real 1693330218]  req@00000000bd920046 x1775581786032832/t0(0) o400->MGC10.204.86.114@tcp@10.204.86.114@tcp:26/25 lens 224/224 e 0 to 1 dl 1693330225 ref 1 fl Rpc:eXNQr/0/ffffffff rc 0/-1 job:''
+[Tue Aug 29 17:30:18 2023] Lustre: 3454219:0:(client.c:2289:ptlrpc_expire_one_request()) Skipped 1 previous similar message
+[Tue Aug 29 17:30:18 2023] Lustre: testfs-MDT0000-mdc-ffff97f6ca814800: Connection to testfs-MDT0000 (at 10.204.86.114@tcp) was lost; in progress operations using this service will wait for recovery to complete
+[Tue Aug 29 17:30:18 2023] LustreError: 166-1: MGC10.204.86.114@tcp: Connection to MGS (at 10.204.86.114@tcp) was lost; in progress operations using this service will fail
+[Tue Aug 29 17:30:23 2023] LNetError: 3454217:0:(lib-move.c:2252:lnet_handle_find_routed_path()) peer 10.204.86.114@tcp has no available nets
